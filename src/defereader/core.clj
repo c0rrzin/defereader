@@ -21,6 +21,10 @@
          (spit filename {:reads {} :tags {}})
          (swap! contents (constantly {:reads {} :tags {}})))))
 
+(defn print-read [{:keys [read/shortname read/link]}]
+  (println shortname (str "(" link ")")))
+
+
 (defn save-reads [contents filename]
   (spit filename @contents))
 
@@ -38,11 +42,11 @@
 
 (defn find-read [contents shortname]
   (if-let [read (get-in @contents [:reads shortname])]
-    (println read)
+    (print-read read)
     (println "Read not found.")))
 
 (defn list-reads [contents]
-  (dorun (map #(println (first %) (str "(" (-> % second :read/link) ")")) (:reads @contents))))
+  (dorun (map #(print-read (second %)) (:reads @contents))))
 
 (defn find-by-tag [contents tag]
   (if-let [names (get-in @contents [:tags tag])]
