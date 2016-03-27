@@ -17,8 +17,7 @@
 
 (defn load-reads [contents filename]
   (try (swap! contents (constantly (read-string (slurp filename))))
-       (catch Exception e
-         (prn "Exception reading: " e)
+       (catch Exception _
          (spit filename {:reads {} :tags {}})
          (swap! contents (constantly {:reads {} :tags {}})))))
 
@@ -28,23 +27,22 @@
 (defn add-read [contents read]
   (let [{:keys [read/shortname]} read]
     (if (get-in @contents [:reads shortname])
-      (println "There already is a read called: " shortname)
+      (println "There already is a read called:" shortname)
       (let [{:keys [reads]} (deref contents)
             n-reads (assoc reads shortname read)]
-        (prn read)
         (swap! contents assoc :reads n-reads)
         (doseq [tag (:read/tags read)]
           (let [n-tag (conj (get-in @contents [:tags tag] #{}) shortname)]
             (swap! contents assoc-in [:tags tag] n-tag)))
-        (println "Read " shortname " successfully added!")))))
+        (println "Read" shortname "successfully added!")))))
 
 (defn find-read [contents shortname]
   (if-let [read (get-in @contents [:reads shortname])]
-    read
-    (println "Read not found")))
+    (println read)
+    (println "Read not found.")))
 
 (defn list-reads [contents]
-  (map #(println (first %) (str "(" (-> % second :read/link) ")")) (:reads @contents)))
+  (dorun (map #(println (first %) (str "(" (-> % second :read/link) ")")) (:reads @contents))))
 
 (defn find-by-tag [contents tag]
   (if-let [names (get-in @contents [:tags tag])]
